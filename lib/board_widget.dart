@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taskboard/task_widget.dart';
 
 import 'model/board.dart';
+import 'model/task.dart';
 
 class BoardWidget extends StatefulWidget {
   final Board board;
@@ -60,15 +61,11 @@ class _BoardWidgetState extends State<BoardWidget> {
                   return ReorderableDelayedDragStartListener(
                     index: index,
                     key: ValueKey(task.id),
-                    child: LongPressDraggable(
-                      dragAnchorStrategy: (Draggable<Object> draggable, BuildContext context, Offset position){
-                        return childDragAnchorStrategy(draggable, context, position);
-                      },
-                      onDragCompleted: (){
-                        widget.board.removeTask(task);
-                        setState(() {
+                    child: Draggable<Task>(
 
-                        });
+                      onDragCompleted: () {
+                        widget.board.removeTask(task);
+                        setState(() {});
                       },
                       data: task,
                       childWhenDragging: TaskDragPlaceholder(),
@@ -111,7 +108,6 @@ class TaskDragPlaceholder extends StatelessWidget {
   const TaskDragPlaceholder({
     Key? key,
   }) : super(key: key);
-
 
   @override
   Widget build(BuildContext context) {

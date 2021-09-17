@@ -45,6 +45,9 @@ class _MainPageState extends State<MainPage> {
               key: ValueKey(board.name),
               index: index,
               child: DragTarget<Task>(
+                onWillAccept:(task){
+                  return !board.tasks.contains(task);
+                },
                 onAccept: (task) {
                   board.newTask(task);
                 },
