@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -27,11 +26,6 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        setState(() {
-          boards.add(Board("Board ${Random().nextInt(100)}"));
-        });
-      }),
       body: SafeArea(
         child: ReorderableListView.builder(
           proxyDecorator:
@@ -50,11 +44,18 @@ class _MainPageState extends State<MainPage> {
             return ReorderableDelayedDragStartListener(
               key: ValueKey(board.name),
               index: index,
-              child: BoardWidget(
-                board: board,
-                addNewTaskCallback: () {
-                  board.newTask(Task("Task ${Random().nextInt(100)}"));
-                  setState(() {});
+              child: DragTarget<Task>(
+                onAccept: (task) {
+                  board.newTask(task);
+                },
+                builder: (context, data, _) {
+                  return BoardWidget(
+                    board: board,
+                    addNewTaskCallback: () {
+                      board.newTask(Task("Task ${Random().nextInt(100)}"));
+                      setState(() {});
+                    },
+                  );
                 },
               ),
             );

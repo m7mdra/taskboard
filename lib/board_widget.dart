@@ -57,12 +57,26 @@ class _BoardWidgetState extends State<BoardWidget> {
                 },
                 itemBuilder: (context, index) {
                   var task = widget.board.tasks[index];
-                  return ReorderableDragStartListener(
+                  return ReorderableDelayedDragStartListener(
                     index: index,
-
                     key: ValueKey(task.id),
-                    child: TaskWidget(
-                      task: task,
+                    child: LongPressDraggable(
+                      dragAnchorStrategy: (Draggable<Object> draggable, BuildContext context, Offset position){
+                        return childDragAnchorStrategy(draggable, context, position);
+                      },
+                      onDragCompleted: (){
+                        widget.board.removeTask(task);
+                        setState(() {
+
+                        });
+                      },
+                      data: task,
+                      childWhenDragging: TaskDragPlaceholder(),
+                      feedback: Container(
+                        child: TaskWidget(task: task),
+                        width: 250,
+                      ),
+                      child: TaskWidget(task: task),
                     ),
                   );
                 },
@@ -90,5 +104,22 @@ class _BoardWidgetState extends State<BoardWidget> {
         ),
       ),
     );
+  }
+}
+
+class TaskDragPlaceholder extends StatelessWidget {
+  const TaskDragPlaceholder({
+    Key? key,
+  }) : super(key: key);
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+            border: Border.all(width: 1, color: Colors.grey.withAlpha(50)),
+            borderRadius: BorderRadius.circular(4)),
+        height: 50);
   }
 }
