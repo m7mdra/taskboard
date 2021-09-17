@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:taskboard/model/task.dart';
 
 class Board {
@@ -11,7 +12,7 @@ class Board {
   DateTime createDate = DateTime.now();
   late DateTime updateDate;
 
-  UnmodifiableListView<Task> get tasks => UnmodifiableListView(_tasks);
+  List<Task> get tasks => _tasks;
 
   Board(this.name);
 
