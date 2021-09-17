@@ -21,9 +21,12 @@ class BoardWidget extends StatefulWidget {
 }
 
 class _BoardWidgetState extends State<BoardWidget> {
+  var scrollController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     var radius = BorderRadius.circular(4);
+
     return Align(
       alignment: AlignmentDirectional.topCenter,
       child: AnimatedContainer(
@@ -50,6 +53,7 @@ class _BoardWidgetState extends State<BoardWidget> {
             SizedBox(height: 16),
             Flexible(
               child: ReorderableListView.builder(
+                scrollController: scrollController,
                 buildDefaultDragHandles: false,
                 primary: false,
                 proxyDecorator:
@@ -58,11 +62,11 @@ class _BoardWidgetState extends State<BoardWidget> {
                 },
                 itemBuilder: (context, index) {
                   var task = widget.board.tasks[index];
-                  return ReorderableDelayedDragStartListener(
+                  return ReorderableDragStartListener(
                     index: index,
                     key: ValueKey(task.id),
                     child: Draggable<Task>(
-
+                      affinity: Axis.horizontal,
                       onDragCompleted: () {
                         widget.board.removeTask(task);
                         setState(() {});
@@ -73,7 +77,7 @@ class _BoardWidgetState extends State<BoardWidget> {
                         child: TaskWidget(task: task),
                         width: 250,
                       ),
-                      child: TaskWidget(task: task),
+                      child: TaskWidget(task: task,onTap: (){},),
                     ),
                   );
                 },
