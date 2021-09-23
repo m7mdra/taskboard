@@ -67,8 +67,11 @@ class _BoardWidgetState extends State<BoardWidget> {
                     key: ValueKey(task.id),
                     child: Draggable<Task>(
                       affinity: Axis.horizontal,
+                      axis: Axis.horizontal,
+                      rootOverlay: true,
                       onDragCompleted: () {
                         widget.board.removeTask(task);
+                        if(mounted)
                         setState(() {});
                       },
                       data: task,

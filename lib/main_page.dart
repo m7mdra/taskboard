@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:taskboard/model/board.dart';
 
@@ -22,12 +24,32 @@ class _MainPageState extends State<MainPage> {
     Board("Testing"),
   ];
   GlobalKey<ReorderableListState> _listKey = GlobalKey<ReorderableListState>();
+  ScrollController _controller = ScrollController();
+  StreamController<PointerMoveEvent> _streamController = StreamController();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _streamController.stream.listen((event) {
+      _controller.jumpTo(_controller.offset + 10);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            boards.add(Board("Board ${Random().nextInt(100)}"));
+          });
+        },
+      ),
       body: SafeArea(
         child: ReorderableListView.builder(
+          scrollController: _controller,
+          physics: ClampingScrollPhysics(),
           proxyDecorator:
               (Widget child, int index, Animation<double> animation) {
             return BoardWidget(
@@ -45,8 +67,13 @@ class _MainPageState extends State<MainPage> {
               key: ValueKey(board.name),
               index: index,
               child: DragTarget<Task>(
-                onWillAccept:(task){
+                hitTestBehavior: HitTestBehavior.translucent,
+                onWillAccept: (task) {
                   return !board.tasks.contains(task);
+                },
+                onMove: (event){
+                 var offset = event.offset;
+
                 },
                 onAccept: (task) {
                   board.newTask(task);
@@ -77,5 +104,13 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+}
+
+class AllowMultipleHorizontalDragGestureRecognizer
+    extends HorizontalDragGestureRecognizer {
+  @override
+  void rejectGesture(int pointer) {
+    acceptGesture(pointer);
   }
 }
