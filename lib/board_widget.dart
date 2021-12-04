@@ -8,9 +8,11 @@ class BoardWidget extends StatefulWidget {
   final Board board;
   final VoidCallback? addNewTaskCallback;
   final bool isDragged;
+  final ValueChanged<bool>? isDragging;
 
   const BoardWidget(
       {Key? key,
+      this.isDragging,
       required this.board,
       this.addNewTaskCallback,
       this.isDragged = false})
@@ -26,7 +28,7 @@ class _BoardWidgetState extends State<BoardWidget> {
   @override
   Widget build(BuildContext context) {
     var radius = BorderRadius.circular(4);
-
+    var tasks = widget.board.tasks;
     return Align(
       alignment: AlignmentDirectional.topCenter,
       child: AnimatedContainer(
@@ -67,30 +69,36 @@ class _BoardWidgetState extends State<BoardWidget> {
                     key: ValueKey(task.id),
                     child: Draggable<Task>(
                       affinity: Axis.horizontal,
-                      axis: Axis.horizontal,
+                      // axis: Axis.horizontal,
                       rootOverlay: true,
                       onDragCompleted: () {
+                        widget.isDragging?.call(false);
                         widget.board.removeTask(task);
-                        if(mounted)
-                        setState(() {});
+                        if (mounted) setState(() {});
                       },
+                      onDragStarted: ()=> widget.isDragging?.call(true),
+                      onDraggableCanceled: (speed,offset)=> widget.isDragging?.call(false),
+                      onDragEnd: (event)=> widget.isDragging?.call(false),
                       data: task,
                       childWhenDragging: TaskDragPlaceholder(),
                       feedback: Container(
                         child: TaskWidget(task: task),
                         width: 250,
                       ),
-                      child: TaskWidget(task: task,onTap: (){},),
+                      child: TaskWidget(
+                        task: task,
+                        onTap: () {},
+                      ),
                     ),
                   );
                 },
-                itemCount: widget.board.tasks.length,
+                itemCount: tasks.length,
                 shrinkWrap: true,
                 onReorder: (int oldIndex, int newIndex) {
                   if (oldIndex < newIndex) {
                     newIndex -= 1;
                   }
-                  final item = widget.board.tasks.removeAt(oldIndex);
+                  final item = tasks.removeAt(oldIndex);
                   widget.board.tasks.insert(newIndex, item);
                 },
               ),

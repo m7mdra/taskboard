@@ -1,7 +1,5 @@
-import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:taskboard/model/board.dart';
 
@@ -25,16 +23,7 @@ class _MainPageState extends State<MainPage> {
   ];
   GlobalKey<ReorderableListState> _listKey = GlobalKey<ReorderableListState>();
   ScrollController _controller = ScrollController();
-  StreamController<PointerMoveEvent> _streamController = StreamController();
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _streamController.stream.listen((event) {
-      _controller.jumpTo(_controller.offset + 10);
-    });
-  }
+  bool _isDragging = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,30 +52,51 @@ class _MainPageState extends State<MainPage> {
           padding: const EdgeInsets.all(16),
           itemBuilder: (BuildContext context, int index) {
             var board = boards[index];
-            return ReorderableDelayedDragStartListener(
+            return ReorderableDragStartListener(
               key: ValueKey(board.name),
               index: index,
-              child: DragTarget<Task>(
-                hitTestBehavior: HitTestBehavior.translucent,
-                onWillAccept: (task) {
-                  return !board.tasks.contains(task);
-                },
-                onMove: (event){
-                 var offset = event.offset;
+              child: Listener(
+                onPointerMove: (event) {
+                  if (!_isDragging) {
+                    return;
+                  }
+                  RenderBox render =
+                      _listKey.currentContext?.findRenderObject() as RenderBox;
+                  Offset position = render.localToGlobal(Offset.zero);
+                  double leadingX = position.dx;
+                  double trailingX = leadingX + render.size.width;
 
+                  const detectedRange = 100;
+                  if (event.position.dx < leadingX + detectedRange) {
+                    var to = _controller.offset - 40;
+                    to = (to < 0) ? 0 : to;
+                    _controller.jumpTo(to);
+                  } else if (event.position.dx > trailingX - detectedRange) {
+                    var to = _controller.offset + 10;
+                    _controller.jumpTo(to);
+                  }
                 },
-                onAccept: (task) {
-                  board.newTask(task);
-                },
-                builder: (context, data, _) {
-                  return BoardWidget(
-                    board: board,
-                    addNewTaskCallback: () {
-                      board.newTask(Task("Task ${Random().nextInt(100)}"));
-                      setState(() {});
-                    },
-                  );
-                },
+                child: DragTarget<Task>(
+                  hitTestBehavior: HitTestBehavior.translucent,
+                  onWillAccept: (task) {
+                    return !board.tasks.contains(task);
+                  },
+                  onAccept: (task) {
+                    board.newTask(task);
+                  },
+                  builder: (context, data, _) {
+                    return BoardWidget(
+                      isDragging: (isDragging) {
+                        this._isDragging = isDragging;
+                      },
+                      board: board,
+                      addNewTaskCallback: () {
+                        board.newTask(Task("Task ${Random().nextInt(100)}"));
+                        setState(() {});
+                      },
+                    );
+                  },
+                ),
               ),
             );
           },
@@ -104,13 +114,5 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
-  }
-}
-
-class AllowMultipleHorizontalDragGestureRecognizer
-    extends HorizontalDragGestureRecognizer {
-  @override
-  void rejectGesture(int pointer) {
-    acceptGesture(pointer);
   }
 }
