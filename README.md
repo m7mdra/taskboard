@@ -2,5 +2,8 @@
 
 A trello clone built with flutter 
 
-https://user-images.githubusercontent.com/16242735/144707474-ec7e8f82-b259-4575-a5f4-f7afb2299650.mov
+
+
+
+https://user-images.githubusercontent.com/16242735/144714040-835d0e76-81af-4460-bbe5-1fcd7d78ed77.mov
 
