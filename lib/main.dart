@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:taskboard/animated_label.dart';
 
@@ -44,8 +45,8 @@ class _TestWidgetState extends State<TestWidget> {
     "AB",
     "ABC",
     "ABCD",
-
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

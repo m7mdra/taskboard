@@ -8,7 +8,6 @@ class AnimatedLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("label length: $label ${label.length} ");
     var duration = Duration(milliseconds: 500);
     var boxDecoration =
         BoxDecoration(borderRadius: BorderRadius.circular(4), color: color);
