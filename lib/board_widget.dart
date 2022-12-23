@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:taskboard/animated_label.dart';
 import 'package:taskboard/task_widget.dart';
 
 import 'model/board.dart';
@@ -27,7 +28,7 @@ class _BoardWidgetState extends State<BoardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var radius = BorderRadius.circular(4);
+    var radius = BorderRadius.circular(8);
     var tasks = widget.board.tasks;
     return Align(
       alignment: AlignmentDirectional.topCenter,
@@ -48,59 +49,84 @@ class _BoardWidgetState extends State<BoardWidget> {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 widget.board.name,
-                style: Theme.of(context).textTheme.bodyText1,
+                style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.start,
               ),
             ),
             SizedBox(height: 16),
             Flexible(
-              child: ReorderableListView.builder(
-                scrollController: scrollController,
-                buildDefaultDragHandles: false,
-                primary: false,
-                proxyDecorator:
-                    (Widget child, int index, Animation<double> animation) {
-                  return TaskWidget(task: widget.board.tasks[index]);
-                },
-                itemBuilder: (context, index) {
-                  var task = widget.board.tasks[index];
-                  return ReorderableDragStartListener(
-                    index: index,
-                    key: ValueKey(task.id),
-                    child: Draggable<Task>(
-                      affinity: Axis.horizontal,
-                      // axis: Axis.horizontal,
-                      rootOverlay: true,
-                      onDragCompleted: () {
-                        widget.isDragging?.call(false);
-                        widget.board.removeTask(task);
-                        if (mounted) setState(() {});
-                      },
-                      onDragStarted: ()=> widget.isDragging?.call(true),
-                      onDraggableCanceled: (speed,offset)=> widget.isDragging?.call(false),
-                      onDragEnd: (event)=> widget.isDragging?.call(false),
-                      data: task,
-                      childWhenDragging: TaskDragPlaceholder(),
-                      feedback: Container(
-                        child: TaskWidget(task: task),
-                        width: 250,
+              child: Scrollbar(
+                interactive: true,
+                trackVisibility: true,
+                thumbVisibility: true,
+                controller: scrollController,
+                child: ReorderableListView.builder(
+                  scrollController: scrollController,
+                  buildDefaultDragHandles: false,
+                  primary: false,
+                  proxyDecorator:
+                      (Widget child, int index, Animation<double> animation) {
+                    return TaskWidget(task: widget.board.tasks[index]);
+                  },
+                  itemBuilder: (context, index) {
+                    var task = widget.board.tasks[index];
+                    return ReorderableDragStartListener(
+                      index: index,
+                      key: ValueKey(task.id),
+                      child: Draggable<Task>(
+                        affinity: Axis.horizontal,
+                        // axis: Axis.horizontal,
+                        rootOverlay: true,
+                        onDragCompleted: () {
+                          widget.isDragging?.call(false);
+                          widget.board.removeTask(task);
+                          if (mounted) setState(() {});
+                        },
+                        onDragStarted: () => widget.isDragging?.call(true),
+                        onDraggableCanceled: (speed, offset) =>
+                            widget.isDragging?.call(false),
+                        onDragEnd: (event) => widget.isDragging?.call(false),
+                        data: task,
+                        childWhenDragging: TaskDragPlaceholder(),
+                        feedback: Container(
+                          child: TaskWidget(task: task),
+                          width: 250,
+                        ),
+                        child: TaskWidget(
+                          task: task,
+                          onTap: () {
+                            showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return Card(
+                                    margin: EdgeInsets.all(32),
+                                    child: Column(children: [
+                                      Wrap(
+                                        children: task.labels
+                                            .map((e) => AnimatedLabel(
+                                                  label: e,
+                                                  show: true,
+                                                ))
+                                            .toList(),
+                                      )
+                                    ]),
+                                  );
+                                });
+                          },
+                        ),
                       ),
-                      child: TaskWidget(
-                        task: task,
-                        onTap: () {},
-                      ),
-                    ),
-                  );
-                },
-                itemCount: tasks.length,
-                shrinkWrap: true,
-                onReorder: (int oldIndex, int newIndex) {
-                  if (oldIndex < newIndex) {
-                    newIndex -= 1;
-                  }
-                  final item = tasks.removeAt(oldIndex);
-                  widget.board.tasks.insert(newIndex, item);
-                },
+                    );
+                  },
+                  itemCount: tasks.length,
+                  shrinkWrap: true,
+                  onReorder: (int oldIndex, int newIndex) {
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
+                    final item = tasks.removeAt(oldIndex);
+                    widget.board.tasks.insert(newIndex, item);
+                  },
+                ),
               ),
             ),
             SizedBox(height: 16),

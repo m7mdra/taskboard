@@ -23,8 +23,7 @@ class TaskWidget extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Wrap(
               children: task.labels
-                  .map((e) =>
-                      AnimatedLabel(show: false, color: e.color, label: e.name))
+                  .map((e) => AnimatedLabel(show: false, label: e))
                   .toList(),
             ),
             const SizedBox(height: 8),

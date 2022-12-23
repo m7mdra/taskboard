@@ -31,9 +31,16 @@ class _MainPageState extends State<MainPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            boards.add(Board("Board ${Random().nextInt(100)}"));
-          });
+          showDialog(
+              context: context,
+              builder: (context) {
+                return SimpleDialog(
+                  title: Text('Add new board by type the title'),
+                  children: [
+                    TextField()
+                  ],
+                );
+              });
         },
       ),
       body: SafeArea(
@@ -60,57 +67,33 @@ class _MainPageState extends State<MainPage> {
             itemBuilder: (BuildContext context, int index) {
               var board = boards[index];
               return ReorderableDragStartListener(
-
-                key: ValueKey(board.name),
-                index: index,
-                child: Listener(
-                  onPointerMove: (event) {
-                    if (!_isDragging) {
-                      return;
-                    }
-                    RenderBox render = _listKey.currentContext
-                        ?.findRenderObject() as RenderBox;
-                    Offset position = render.localToGlobal(Offset.zero);
-                    double leadingX = position.dx;
-                    double trailingX = leadingX + render.size.width;
-                    const detectedRange = 100;
-                    if (event.position.dx < leadingX + detectedRange) {
-                      var to = _controller.offset - 20;
-                      to = (to < 0) ? 0 : to;
-
-                      _controller.jumpTo(to);
-                    } else if (event.position.dx > trailingX - detectedRange) {
-                      var to = _controller.offset + 20;
-                      print(to);
-                      to = (to > _controller.position.maxScrollExtent)
-                          ? _controller.position.maxScrollExtent
-                          : to;
-                      _controller.jumpTo(to);
-                    }
-                  },
-                  child: DragTarget<Task>(
-                    hitTestBehavior: HitTestBehavior.translucent,
-                    onWillAccept: (task) {
-                      return !board.tasks.contains(task);
-                    },
-                    onAccept: (task) {
-                      board.newTask(task);
-                    },
-                    builder: (context, data, _) {
-                      return BoardWidget(
-                        isDragging: (isDragging) {
-                          this._isDragging = isDragging;
-                        },
-                        board: board,
-                        addNewTaskCallback: () {
-                          board.newTask(Task("Task ${Random().nextInt(100)}"));
-                          setState(() {});
-                        },
-                      );
-                    },
-                  ),
-                ),
-              );
+                  key: ValueKey(board.name),
+                  index: index,
+                  child: Listener(
+                    onPointerMove: _pointerMove,
+                    child: DragTarget<Task>(
+                      hitTestBehavior: HitTestBehavior.translucent,
+                      onWillAccept: (task) {
+                        return !board.tasks.contains(task);
+                      },
+                      onAccept: (task) {
+                        board.newTask(task);
+                      },
+                      builder: (context, data, _) {
+                        return BoardWidget(
+                          isDragging: (isDragging) {
+                            this._isDragging = isDragging;
+                          },
+                          board: board,
+                          addNewTaskCallback: () {
+                            board
+                                .newTask(Task("Task ${Random().nextInt(100)}"));
+                            setState(() {});
+                          },
+                        );
+                      },
+                    ),
+                  ));
             },
             scrollDirection: Axis.horizontal,
             itemCount: boards.length,
@@ -127,5 +110,29 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+
+  void _pointerMove(event) {
+    if (!_isDragging) {
+      return;
+    }
+    RenderBox render = _listKey.currentContext?.findRenderObject() as RenderBox;
+    Offset position = render.localToGlobal(Offset.zero);
+    double leadingX = position.dx;
+    double trailingX = leadingX + render.size.width;
+    const detectedRange = 100;
+    if (event.position.dx < leadingX + detectedRange) {
+      var to = _controller.offset - 20;
+      to = (to < 0) ? 0 : to;
+
+      _controller.jumpTo(to);
+    } else if (event.position.dx > trailingX - detectedRange) {
+      var to = _controller.offset + 20;
+      print(to);
+      to = (to > _controller.position.maxScrollExtent)
+          ? _controller.position.maxScrollExtent
+          : to;
+      _controller.jumpTo(to);
+    }
   }
 }
